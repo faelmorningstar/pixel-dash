@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { GameCanvas } from './components/GameCanvas'
 import { MenuScreen } from './components/MenuScreen'
 import type { GameStatus } from './game/types'
@@ -6,6 +6,16 @@ import './App.css'
 
 function App() {
   const [gameStatus, setGameStatus] = useState<GameStatus>('menu')
+  const [score, setScore] = useState(0)
+
+  const startGame = () => {
+    setScore(0)
+    setGameStatus('playing')
+  }
+
+  const collectPoints = useCallback((points: number) => {
+    setScore((currentScore) => currentScore + points)
+  }, [])
 
   return (
     <main className="app-shell">
@@ -15,12 +25,16 @@ function App() {
       </header>
 
       {gameStatus === 'menu' ? (
-        <MenuScreen onPlay={() => setGameStatus('playing')} />
+        <MenuScreen onPlay={startGame} />
       ) : (
         <section className="game-screen" aria-label="Área de jogo Pixel Dash">
-          <GameCanvas />
+          <div className="hud" aria-live="polite">
+            <span>Pontos</span>
+            <strong>{score}</strong>
+          </div>
+          <GameCanvas onCollect={collectPoints} />
           <p className="stage-note">
-            Use as setas ou as teclas A / D para mover o player pela arena.
+            Mova-se com as setas ou A / D e colete as energias douradas.
           </p>
           <button
             className="text-button"
