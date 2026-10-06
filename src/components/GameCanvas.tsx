@@ -15,7 +15,11 @@ const STARS = [
   [0.83, 0.69, 2],
 ] as const
 
-export function GameCanvas() {
+type GameCanvasProps = {
+  onCollect: (points: number) => void
+}
+
+export function GameCanvas({ onCollect }: GameCanvasProps) {
   const hostRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -52,18 +56,30 @@ export function GameCanvas() {
       const stars = new Graphics()
       const track = new Graphics()
       const player = new Graphics()
+      const collectible = new Graphics()
       const keyboardInput = createKeyboardInput(window)
       let playerHeight = 0
       let playerWidth = 0
       let playerX = 0
       let minimumPlayerX = 0
       let maximumPlayerX = 0
+      let trackY = 0
+      let collectibleX = 0
+      let collectibleY = 0
 
-      app.stage.addChild(backdrop, stars, track, player)
+      app.stage.addChild(backdrop, stars, track, collectible, player)
+
+      const resetCollectible = () => {
+        collectibleX =
+          minimumPlayerX + Math.random() * (maximumPlayerX - minimumPlayerX)
+        collectibleY = -GAME_CONFIG.collectible.radius
+        collectible.x = collectibleX
+        collectible.y = collectibleY
+      }
 
       const drawScene = () => {
         const { height, width } = app.screen
-        const trackY = height - 60
+        trackY = height - 60
         playerWidth = Math.min(GAME_CONFIG.player.maxWidth, width * 0.14)
         playerHeight = playerWidth * 0.62
         minimumPlayerX = GAME_CONFIG.player.minHorizontalPadding + playerWidth / 2
@@ -114,6 +130,37 @@ export function GameCanvas() {
 
         player.x = playerX
         player.y = trackY
+
+        collectible
+          .clear()
+          .circle(0, 0, GAME_CONFIG.collectible.radius)
+          .fill({ color: GAME_CONFIG.colors.collectible })
+          .circle(-3, -3, 4)
+          .fill({ color: GAME_CONFIG.colors.collectibleHighlight })
+
+        if (collectibleX === 0) {
+          resetCollectible()
+        } else {
+          collectibleX = Math.min(
+            Math.max(collectibleX, minimumPlayerX),
+            maximumPlayerX,
+          )
+          collectible.x = collectibleX
+        }
+      }
+
+      const isCollecting = () => {
+        const radius = GAME_CONFIG.collectible.radius
+        const playerLeft = playerX - playerWidth / 2
+        const playerRight = playerX + playerWidth / 2
+        const playerTop = trackY - playerHeight
+
+        return (
+          collectibleX + radius >= playerLeft &&
+          collectibleX - radius <= playerRight &&
+          collectibleY + radius >= playerTop &&
+          collectibleY - radius <= trackY
+        )
       }
 
       const updatePlayer = () => {
@@ -129,6 +176,17 @@ export function GameCanvas() {
         )
         player.x = playerX
         player.rotation = direction * 0.08
+
+        collectibleY += GAME_CONFIG.collectible.speed * deltaSeconds
+        collectible.y = collectibleY
+        collectible.rotation += deltaSeconds * 2
+
+        if (isCollecting()) {
+          onCollect(GAME_CONFIG.collectible.points)
+          resetCollectible()
+        } else if (collectibleY - GAME_CONFIG.collectible.radius > trackY) {
+          resetCollectible()
+        }
       }
 
       app.renderer.on('resize', drawScene)
@@ -155,7 +213,7 @@ export function GameCanvas() {
         app.destroy(true)
       }
     }
-  }, [])
+  }, [onCollect])
 
   return <div className="pixi-canvas-host" ref={hostRef} />
 }
