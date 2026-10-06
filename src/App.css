@@ -115,6 +115,24 @@ h1 {
   gap: 1rem;
 }
 
+.hud {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  width: 100%;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hud strong {
+  color: #fbbf24;
+  font-size: 1.25rem;
+}
+
 .pixi-canvas-host {
   width: 100%;
   min-height: 22rem;
