@@ -11,12 +11,18 @@ export const GAME_CONFIG = {
     speed: 190,
     points: 10,
   },
+  obstacle: {
+    size: 30,
+    speed: 225,
+  },
   colors: {
     canvasBackground: 0x07111f,
     player: 0x5eead4,
     playerHighlight: 0xfef3c7,
     collectible: 0xfbbf24,
     collectibleHighlight: 0xfef3c7,
+    obstacle: 0xfb7185,
+    obstacleHighlight: 0xfecdd3,
     star: 0xe0f2fe,
     track: 0x22d3ee,
     trackShadow: 0x0f2741,
