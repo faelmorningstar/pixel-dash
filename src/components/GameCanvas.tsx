@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Application, Graphics } from 'pixi.js'
 import { GAME_CONFIG } from '../game/config'
+import { createKeyboardInput } from '../game/systems/input'
 
 const STARS = [
   [0.08, 0.15, 2],
@@ -51,14 +52,28 @@ export function GameCanvas() {
       const stars = new Graphics()
       const track = new Graphics()
       const player = new Graphics()
+      const keyboardInput = createKeyboardInput(window)
+      let playerHeight = 0
+      let playerWidth = 0
+      let playerX = 0
+      let minimumPlayerX = 0
+      let maximumPlayerX = 0
 
       app.stage.addChild(backdrop, stars, track, player)
 
       const drawScene = () => {
         const { height, width } = app.screen
         const trackY = height - 60
-        const playerWidth = Math.min(54, width * 0.14)
-        const playerHeight = playerWidth * 0.62
+        playerWidth = Math.min(GAME_CONFIG.player.maxWidth, width * 0.14)
+        playerHeight = playerWidth * 0.62
+        minimumPlayerX = GAME_CONFIG.player.minHorizontalPadding + playerWidth / 2
+        maximumPlayerX = width - GAME_CONFIG.player.minHorizontalPadding - playerWidth / 2
+
+        if (playerX === 0) {
+          playerX = width / 2
+        }
+
+        playerX = Math.min(Math.max(playerX, minimumPlayerX), maximumPlayerX)
 
         backdrop
           .clear()
@@ -82,30 +97,60 @@ export function GameCanvas() {
         player
           .clear()
           .roundRect(
-            width / 2 - playerWidth / 2,
-            trackY - playerHeight,
+            -playerWidth / 2,
+            -playerHeight,
             playerWidth,
             playerHeight,
             10,
           )
           .fill({ color: GAME_CONFIG.colors.player })
           .rect(
-            width / 2 - playerWidth * 0.23,
-            trackY - playerHeight * 0.72,
+            -playerWidth * 0.23,
+            -playerHeight * 0.72,
             playerWidth * 0.46,
             4,
           )
           .fill({ color: GAME_CONFIG.colors.playerHighlight })
+
+        player.x = playerX
+        player.y = trackY
+      }
+
+      const updatePlayer = () => {
+        const direction = keyboardInput.getHorizontalDirection()
+        const deltaSeconds = app.ticker.deltaMS / 1000
+
+        playerX = Math.min(
+          Math.max(
+            playerX + direction * GAME_CONFIG.player.speed * deltaSeconds,
+            minimumPlayerX,
+          ),
+          maximumPlayerX,
+        )
+        player.x = playerX
+        player.rotation = direction * 0.08
       }
 
       app.renderer.on('resize', drawScene)
+      app.ticker.add(updatePlayer)
       drawScene()
+
+      return () => {
+        keyboardInput.destroy()
+        app.renderer.off('resize', drawScene)
+        app.ticker.remove(updatePlayer)
+      }
     }
 
-    void initialisePixi()
+    let disposeScene: (() => void) | undefined
+
+    void initialisePixi().then((dispose) => {
+      disposeScene = dispose
+    })
 
     return () => {
       isDisposed = true
+      disposeScene?.()
       if (isInitialised) {
         app.destroy(true)
       }
