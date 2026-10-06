@@ -18,9 +18,16 @@ const STARS = [
 type GameCanvasProps = {
   onCollect: (points: number) => void
   onHit: () => void
+  onTimeChange: (seconds: number) => void
+  onTimeUp: () => void
 }
 
-export function GameCanvas({ onCollect, onHit }: GameCanvasProps) {
+export function GameCanvas({
+  onCollect,
+  onHit,
+  onTimeChange,
+  onTimeUp,
+}: GameCanvasProps) {
   const hostRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -70,6 +77,9 @@ export function GameCanvas({ onCollect, onHit }: GameCanvasProps) {
       let collectibleY = 0
       let obstacleX = 0
       let obstacleY = 0
+      let remainingSeconds: number = GAME_CONFIG.durationSeconds
+      let displayedSeconds: number = GAME_CONFIG.durationSeconds
+      let hasTimedOut = false
 
       app.stage.addChild(backdrop, stars, track, collectible, obstacle, player)
 
@@ -203,8 +213,26 @@ export function GameCanvas({ onCollect, onHit }: GameCanvasProps) {
       }
 
       const updatePlayer = () => {
+        if (hasTimedOut) {
+          return
+        }
+
         const direction = keyboardInput.getHorizontalDirection()
         const deltaSeconds = app.ticker.deltaMS / 1000
+
+        remainingSeconds = Math.max(remainingSeconds - deltaSeconds, 0)
+        const nextDisplayedSeconds = Math.ceil(remainingSeconds)
+
+        if (nextDisplayedSeconds !== displayedSeconds) {
+          displayedSeconds = nextDisplayedSeconds
+          onTimeChange(displayedSeconds)
+        }
+
+        if (remainingSeconds === 0) {
+          hasTimedOut = true
+          onTimeUp()
+          return
+        }
 
         playerX = Math.min(
           Math.max(
@@ -278,7 +306,7 @@ export function GameCanvas({ onCollect, onHit }: GameCanvasProps) {
         app.destroy(true)
       }
     }
-  }, [onCollect, onHit])
+  }, [onCollect, onHit, onTimeChange, onTimeUp])
 
   return <div className="pixi-canvas-host" ref={hostRef} />
 }
