@@ -20,8 +20,7 @@ function App() {
         <section className="game-screen" aria-label="Área de jogo Pixel Dash">
           <GameCanvas />
           <p className="stage-note">
-            Canvas inicial renderizado com PixiJS. Movimento, colisões e placar
-            entram na próxima etapa.
+            Use as setas ou as teclas A / D para mover o player pela arena.
           </p>
           <button
             className="text-button"
