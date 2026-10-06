@@ -38,7 +38,8 @@ h1 {
 }
 
 .menu-screen,
-.game-screen {
+.game-screen,
+.game-over-screen {
   display: grid;
   justify-items: center;
   padding: clamp(1.5rem, 5vw, 3.5rem);
@@ -115,10 +116,31 @@ h1 {
   gap: 1rem;
 }
 
+.game-over-screen {
+  gap: 1rem;
+  text-align: center;
+}
+
+.game-over-screen h2 {
+  margin-bottom: 0;
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+
+.game-over-score {
+  margin-bottom: 0.5rem;
+  color: var(--color-muted);
+}
+
+.game-over-score strong {
+  color: #fbbf24;
+  font-family: var(--font-mono);
+  font-size: 1.25em;
+}
+
 .hud {
   display: flex;
   align-items: baseline;
-  gap: 0.5rem;
+  justify-content: space-between;
   width: 100%;
   color: var(--color-muted);
   font-family: var(--font-mono);
@@ -126,6 +148,12 @@ h1 {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.hud div {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
 }
 
 .hud strong {
@@ -174,7 +202,8 @@ h1 {
   }
 
   .menu-screen,
-  .game-screen {
+  .game-screen,
+  .game-over-screen {
     padding: 1.25rem;
     border-radius: 1rem;
   }
