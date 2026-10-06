@@ -17,9 +17,10 @@ const STARS = [
 
 type GameCanvasProps = {
   onCollect: (points: number) => void
+  onHit: () => void
 }
 
-export function GameCanvas({ onCollect }: GameCanvasProps) {
+export function GameCanvas({ onCollect, onHit }: GameCanvasProps) {
   const hostRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -57,6 +58,7 @@ export function GameCanvas({ onCollect }: GameCanvasProps) {
       const track = new Graphics()
       const player = new Graphics()
       const collectible = new Graphics()
+      const obstacle = new Graphics()
       const keyboardInput = createKeyboardInput(window)
       let playerHeight = 0
       let playerWidth = 0
@@ -66,8 +68,10 @@ export function GameCanvas({ onCollect }: GameCanvasProps) {
       let trackY = 0
       let collectibleX = 0
       let collectibleY = 0
+      let obstacleX = 0
+      let obstacleY = 0
 
-      app.stage.addChild(backdrop, stars, track, collectible, player)
+      app.stage.addChild(backdrop, stars, track, collectible, obstacle, player)
 
       const resetCollectible = () => {
         collectibleX =
@@ -75,6 +79,14 @@ export function GameCanvas({ onCollect }: GameCanvasProps) {
         collectibleY = -GAME_CONFIG.collectible.radius
         collectible.x = collectibleX
         collectible.y = collectibleY
+      }
+
+      const resetObstacle = () => {
+        obstacleX =
+          minimumPlayerX + Math.random() * (maximumPlayerX - minimumPlayerX)
+        obstacleY = -GAME_CONFIG.obstacle.size
+        obstacle.x = obstacleX
+        obstacle.y = obstacleY
       }
 
       const drawScene = () => {
@@ -147,19 +159,46 @@ export function GameCanvas({ onCollect }: GameCanvasProps) {
           )
           collectible.x = collectibleX
         }
+
+        obstacle
+          .clear()
+          .roundRect(
+            -GAME_CONFIG.obstacle.size / 2,
+            -GAME_CONFIG.obstacle.size / 2,
+            GAME_CONFIG.obstacle.size,
+            GAME_CONFIG.obstacle.size,
+            7,
+          )
+          .fill({ color: GAME_CONFIG.colors.obstacle })
+          .rect(-7, -7, 14, 4)
+          .fill({ color: GAME_CONFIG.colors.obstacleHighlight })
+
+        if (obstacleX === 0) {
+          resetObstacle()
+        } else {
+          obstacleX = Math.min(
+            Math.max(obstacleX, minimumPlayerX),
+            maximumPlayerX,
+          )
+          obstacle.x = obstacleX
+        }
       }
 
-      const isCollecting = () => {
-        const radius = GAME_CONFIG.collectible.radius
+      const isOverlappingPlayer = (
+        entityX: number,
+        entityY: number,
+        entityHalfWidth: number,
+        entityHalfHeight: number,
+      ) => {
         const playerLeft = playerX - playerWidth / 2
         const playerRight = playerX + playerWidth / 2
         const playerTop = trackY - playerHeight
 
         return (
-          collectibleX + radius >= playerLeft &&
-          collectibleX - radius <= playerRight &&
-          collectibleY + radius >= playerTop &&
-          collectibleY - radius <= trackY
+          entityX + entityHalfWidth >= playerLeft &&
+          entityX - entityHalfWidth <= playerRight &&
+          entityY + entityHalfHeight >= playerTop &&
+          entityY - entityHalfHeight <= trackY
         )
       }
 
@@ -181,11 +220,37 @@ export function GameCanvas({ onCollect }: GameCanvasProps) {
         collectible.y = collectibleY
         collectible.rotation += deltaSeconds * 2
 
-        if (isCollecting()) {
+        if (
+          isOverlappingPlayer(
+            collectibleX,
+            collectibleY,
+            GAME_CONFIG.collectible.radius,
+            GAME_CONFIG.collectible.radius,
+          )
+        ) {
           onCollect(GAME_CONFIG.collectible.points)
           resetCollectible()
         } else if (collectibleY - GAME_CONFIG.collectible.radius > trackY) {
           resetCollectible()
+        }
+
+        obstacleY += GAME_CONFIG.obstacle.speed * deltaSeconds
+        obstacle.y = obstacleY
+        obstacle.rotation -= deltaSeconds * 1.25
+
+        const obstacleHalfSize = GAME_CONFIG.obstacle.size / 2
+        if (
+          isOverlappingPlayer(
+            obstacleX,
+            obstacleY,
+            obstacleHalfSize,
+            obstacleHalfSize,
+          )
+        ) {
+          onHit()
+          resetObstacle()
+        } else if (obstacleY - obstacleHalfSize > trackY) {
+          resetObstacle()
         }
       }
 
@@ -213,7 +278,7 @@ export function GameCanvas({ onCollect }: GameCanvasProps) {
         app.destroy(true)
       }
     }
-  }, [onCollect])
+  }, [onCollect, onHit])
 
   return <div className="pixi-canvas-host" ref={hostRef} />
 }
