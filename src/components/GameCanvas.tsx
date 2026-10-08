@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { Application, Graphics } from 'pixi.js'
 import { GAME_CONFIG } from '../game/config'
 import { createKeyboardInput } from '../game/systems/input'
+import { createPointerInput } from '../game/systems/pointerInput'
 
 const STARS = [
   [0.08, 0.15, 2],
@@ -67,6 +68,7 @@ export function GameCanvas({
       const collectible = new Graphics()
       const obstacle = new Graphics()
       const keyboardInput = createKeyboardInput(window)
+      const pointerInput = createPointerInput(app.canvas)
       let playerHeight = 0
       let playerWidth = 0
       let playerX = 0
@@ -217,7 +219,8 @@ export function GameCanvas({
           return
         }
 
-        const direction = keyboardInput.getHorizontalDirection()
+        const keyboardDirection = keyboardInput.getHorizontalDirection()
+        const direction = keyboardDirection || pointerInput.getHorizontalDirection()
         const deltaSeconds = app.ticker.deltaMS / 1000
 
         remainingSeconds = Math.max(remainingSeconds - deltaSeconds, 0)
@@ -288,6 +291,7 @@ export function GameCanvas({
 
       return () => {
         keyboardInput.destroy()
+        pointerInput.destroy()
         app.renderer.off('resize', drawScene)
         app.ticker.remove(updatePlayer)
       }
