@@ -71,7 +71,8 @@ function App() {
             onTimeUp={endGame}
           />
           <p className="stage-note">
-            Colete energias douradas e evite os obstáculos vermelhos.
+            Use as setas ou A / D. No celular, toque e segure a metade desejada
+            da arena.
           </p>
           <button
             className="text-button"
