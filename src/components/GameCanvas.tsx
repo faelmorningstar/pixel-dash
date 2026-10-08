@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Application, Graphics } from 'pixi.js'
+import { Application, Graphics, Text } from 'pixi.js'
 import { GAME_CONFIG } from '../game/config'
 import { createKeyboardInput } from '../game/systems/input'
 import { createPointerInput } from '../game/systems/pointerInput'
@@ -67,6 +67,15 @@ export function GameCanvas({
       const player = new Graphics()
       const collectible = new Graphics()
       const obstacle = new Graphics()
+      const debugOverlay = new Graphics()
+      const debugText = new Text({
+        text: '',
+        style: {
+          fill: 0xf8fafc,
+          fontFamily: 'monospace',
+          fontSize: 12,
+        },
+      })
       const keyboardInput = createKeyboardInput(window)
       const pointerInput = createPointerInput(app.canvas)
       let playerHeight = 0
@@ -82,8 +91,18 @@ export function GameCanvas({
       let remainingSeconds: number = GAME_CONFIG.durationSeconds
       let displayedSeconds: number = GAME_CONFIG.durationSeconds
       let hasTimedOut = false
+      let isDebugEnabled = false
 
-      app.stage.addChild(backdrop, stars, track, collectible, obstacle, player)
+      app.stage.addChild(
+        backdrop,
+        stars,
+        track,
+        collectible,
+        obstacle,
+        player,
+        debugOverlay,
+        debugText,
+      )
 
       const resetCollectible = () => {
         collectibleX =
@@ -214,6 +233,57 @@ export function GameCanvas({
         )
       }
 
+      const drawDebug = () => {
+        debugOverlay.clear()
+        debugOverlay.visible = isDebugEnabled
+        debugText.visible = isDebugEnabled
+
+        if (!isDebugEnabled) {
+          return
+        }
+
+        const playerLeft = playerX - playerWidth / 2
+        const playerTop = trackY - playerHeight
+        const collectibleRadius = GAME_CONFIG.collectible.radius
+        const obstacleHalfSize = GAME_CONFIG.obstacle.size / 2
+
+        debugOverlay
+          .rect(playerLeft, playerTop, playerWidth, playerHeight)
+          .stroke({ color: 0x5eead4, width: 1 })
+          .rect(
+            collectibleX - collectibleRadius,
+            collectibleY - collectibleRadius,
+            collectibleRadius * 2,
+            collectibleRadius * 2,
+          )
+          .stroke({ color: 0xfbbf24, width: 1 })
+          .rect(
+            obstacleX - obstacleHalfSize,
+            obstacleY - obstacleHalfSize,
+            GAME_CONFIG.obstacle.size,
+            GAME_CONFIG.obstacle.size,
+          )
+          .stroke({ color: 0xfb7185, width: 1 })
+
+        debugText.text = [
+          `FPS: ${Math.round(app.ticker.FPS)}`,
+          'State: playing',
+          `Player X: ${Math.round(playerX)}`,
+        ].join('\n')
+        debugText.x = 12
+        debugText.y = 12
+      }
+
+      const handleDebugKey = (event: KeyboardEvent) => {
+        if (event.code !== 'KeyD' || event.repeat) {
+          return
+        }
+
+        event.preventDefault()
+        isDebugEnabled = !isDebugEnabled
+        drawDebug()
+      }
+
       const updatePlayer = () => {
         if (hasTimedOut) {
           return
@@ -283,8 +353,11 @@ export function GameCanvas({
         } else if (obstacleY - obstacleHalfSize > trackY) {
           resetObstacle()
         }
+
+        drawDebug()
       }
 
+      window.addEventListener('keydown', handleDebugKey)
       app.renderer.on('resize', drawScene)
       app.ticker.add(updatePlayer)
       drawScene()
@@ -292,6 +365,7 @@ export function GameCanvas({
       return () => {
         keyboardInput.destroy()
         pointerInput.destroy()
+        window.removeEventListener('keydown', handleDebugKey)
         app.renderer.off('resize', drawScene)
         app.ticker.remove(updatePlayer)
       }
