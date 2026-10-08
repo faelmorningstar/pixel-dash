@@ -1,5 +1,5 @@
-const LEFT_KEYS = new Set(['ArrowLeft', 'KeyA'])
-const RIGHT_KEYS = new Set(['ArrowRight', 'KeyD'])
+const LEFT_KEYS = new Set(['ArrowLeft'])
+const RIGHT_KEYS = new Set(['ArrowRight'])
 
 export type KeyboardInput = {
   destroy: () => void
@@ -35,9 +35,8 @@ export function createKeyboardInput(target: Window): KeyboardInput {
   return {
     getHorizontalDirection: () => {
       const movingLeft =
-        pressedKeys.has('ArrowLeft') || pressedKeys.has('KeyA')
-      const movingRight =
-        pressedKeys.has('ArrowRight') || pressedKeys.has('KeyD')
+        pressedKeys.has('ArrowLeft')
+      const movingRight = pressedKeys.has('ArrowRight')
 
       if (movingLeft === movingRight) {
         return 0
