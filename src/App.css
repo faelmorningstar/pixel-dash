@@ -1,5 +1,6 @@
 .app-shell {
   width: min(100% - 2rem, 68rem);
+  min-height: 100svh;
   margin: 0 auto;
   padding: clamp(1.5rem, 4vw, 3rem) 0;
 }
@@ -12,8 +13,8 @@
 .eyebrow {
   margin: 0 0 0.5rem;
   color: var(--color-accent);
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-family: var(--font-display);
+  font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -28,13 +29,15 @@ p {
 h1,
 h2 {
   color: var(--color-heading);
+  font-family: var(--font-display);
 }
 
 h1 {
   margin-bottom: 0;
   font-size: clamp(2.25rem, 7vw, 4.5rem);
-  letter-spacing: -0.06em;
-  line-height: 0.95;
+  font-family: var(--font-display);
+  letter-spacing: -0.04em;
+  line-height: 1.05;
 }
 
 .menu-screen,
@@ -45,12 +48,14 @@ h1 {
   padding: clamp(1.5rem, 5vw, 3.5rem);
   border: 1px solid var(--color-border);
   border-radius: 1.5rem;
-  background: var(--color-surface);
-  box-shadow: 0 1.25rem 3.75rem rgb(2 6 23 / 0.25);
+  background: rgb(2 6 23 / 0.9);
+  box-shadow: 0 1.25rem 3.75rem rgb(2 6 23 / 0.58);
 }
 
 .menu-screen {
   gap: 1.5rem;
+  max-width: 36rem;
+  margin-right: auto;
   text-align: center;
 }
 
@@ -66,7 +71,7 @@ h1 {
   padding: 1rem 1.125rem;
   border: 1px solid var(--color-border);
   border-radius: 0.875rem;
-  background: rgb(15 23 42 / 0.65);
+  background: rgb(15 23 42 / 0.92);
   text-align: left;
 }
 
@@ -74,6 +79,7 @@ h1 {
   margin: 0 0 0.75rem;
   color: var(--color-heading);
   font-size: 0.875rem;
+  font-family: var(--font-display);
 }
 
 .instructions ul {
@@ -143,8 +149,8 @@ h1 {
   justify-content: space-between;
   width: 100%;
   color: var(--color-muted);
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-family: var(--font-display);
+  font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -158,6 +164,7 @@ h1 {
 
 .hud strong {
   color: #fbbf24;
+  font-family: var(--font-mono);
   font-size: 1.25rem;
 }
 
@@ -212,5 +219,9 @@ h1 {
 
   .pixi-canvas-host {
     min-height: 19rem;
+  }
+
+  .menu-screen {
+    margin-right: 0;
   }
 }

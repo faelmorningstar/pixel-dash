@@ -71,8 +71,7 @@ function App() {
             onTimeUp={endGame}
           />
           <p className="stage-note">
-            Use as setas. No celular, toque e segure a metade desejada da arena.
-            Pressione D para o modo debug.
+            Use as setas ou toque e segure a metade desejada da arena.
           </p>
           <button
             className="text-button"
